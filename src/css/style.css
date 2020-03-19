@@ -1,0 +1,17 @@
+body {
+   background-color: lightgray;
+}
+
+button {
+   border: none;
+   background-color: blue;
+   color: white;
+   height: 1.6em;
+   width: 6em;
+   border-radius: 5px;
+   font-weight: 700;
+}
+
+button:hover {
+   opacity: 60%;
+}

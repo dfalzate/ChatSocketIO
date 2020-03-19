@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Chat - Socket.io</title>
+      <style>
+         body {
+            background-color: lightgray;
+         }
+
+         button {
+            border: none;
+            background-color: blue;
+            color: white;
+            height: 1.6em;
+            width: 6em;
+            border-radius: 5px;
+            font-weight: 700;
+         }
+
+         button:hover {
+            opacity: 60%;
+         }
+      </style>
+   </head>
+   <body>
+      <h2>Chat socket.io</h2>
+      <fieldset>
+         <legend>Enviar mensaje</legend>
+         <form class="formMessages">
+            <label for="formMessages_message"></label>
+            <input
+               type="text"
+               name="formMessages__message"
+               class="formMessages__message"
+            />
+            <button>Enviar</button>
+         </form>
+      </fieldset>
+      <fieldset>
+         <legend>Mensajes</legend>
+         <div class="contentMessages"></div>
+      </fieldset>
+      <script src="/socket.io/socket.io.js"></script>
+      <script>
+         const socket = io();
+         const formMessages = document.querySelector('.formMessages');
+         const contentMessages = document.querySelector('.contentMessages');
+
+         let messages = '';
+
+         printMessages();
+
+         socket.on('BEConnection', data => {
+            console.log(data);
+         });
+
+         socket.on('message', data => {
+            printMessages();
+         });
+
+         formMessages.addEventListener('submit', event => {
+            event.preventDefault();
+            const { formMessages__message } = event.target.elements;
+            const message = {
+               message: formMessages__message.value
+            };
+            fetch('http://localhost:3000/messages', {
+               method: 'post',
+               body: JSON.stringify(message),
+               headers: {
+                  'Content-type': 'application/json'
+               }
+            })
+               .then(data => data.json())
+               .then(data => {
+                  socket.emit('message', message.message);
+                  formMessages.reset();
+                  contentMessages.innerHTML += printMessage(message);
+               });
+         });
+
+         function printMessages() {
+            fetch('http://localhost:3000/messages')
+               .then(data => data.json())
+               .then(messages => {
+                  let result = messages
+                     .map(message => printMessage(message))
+                     .join('');
+                  contentMessages.innerHTML = result;
+               });
+         }
+
+         function printMessage(message) {
+            return `<div class="contentMessages__message">
+                        <p>${message.message} at ${message.createdAt}</p>                           
+                     </div>`;
+         }
+      </script>
+   </body>
+</html>
